@@ -2,6 +2,7 @@
 <project basedir="." default="build" name="JavaFileIO">
 	<property environment="env"/>
 	<target name="setProperties">
+		<property name="project-name"			value="JavaFileIO"/>
 		<property name="main-class"  			value="demo.FileDemo"/>
 		<property name="copyfile-main-class"  	value="demo.CopyFileDemo"/>
 		<property name="filelist-main-class"  	value="demo.FileListDemo"/>
@@ -61,9 +62,8 @@
 		</javac>
     </target>
 	
-	<target name="build">
-		<mkdir dir="deploy" />
-		<jar jarfile="deploy/FileForceDelete.jar" basedir="${base-dir}" depends="compile">
+	<target name="build" depends="compile">
+		<jar jarfile="${deploy-dir}/${project-name}.jar" basedir="${base-dir}">
 			<manifest>
 				<attribute name="Manifest-Version" value="1.0" />
 				<attribute name="Created-By" value="Chris Wong" />
@@ -88,12 +88,49 @@
 		</java>
 	</target>
 
+	<!-- Run by jar -->
+	
+	<!-- Run ${main-class} by jar -->
+	<target name="jar" depends="build">
+		<java fork="true" failonerror="true" classname="${main-class}" >
+		   <classpath>
+				<pathelement location="deploy/${project-name}.jar"/>
+		   </classpath>
+		</java>
+    </target>
+	
+	<!-- Run ${copyfile-main-class} by jar -->
+	<target name="jarcp" depends="build">
+		<java fork="true" failonerror="true" classname="${copyfile-main-class}" >
+		   <classpath>
+				<pathelement location="deploy/${project-name}.jar"/>
+		   </classpath>
+			<arg value="${path}" />
+		</java>
+    </target>
+	
+	<!-- Run ${copyfile-main-class} by jar -->
+	<target name="jarls" depends="build">
+		<java fork="true" failonerror="true" classname="${filelist-main-class}" >
+		   <classpath>
+				<pathelement location="deploy/${project-name}.jar"/>
+		   </classpath>
+		</java>
+    </target>
+	
+	<!-- Run by jar -->
+	
 	<!-- Help menu -->
 	<target name="help" description="help information" depends="check">
 		<echo>Sample cmd: ant run</echo>
 		<echo>Sample cmd: ant runcp</echo>
 		<echo>Sample cmd: ant runls</echo>
 		<echo>    1: ant runls -Dpath="D:\tmp"</echo>
+		<echo>       alias to java -cp ${base-dir} ${filelist-main-class} "D:\tmp"</echo>
+		<echo>Sample cmd: ant jar</echo>
 		<echo>Sample cmd: ant jarcp</echo>
+		<echo>Sample cmd: ant jarls</echo>
+		<echo>    1: ant jarls -Dpath="D:\tmp"</echo>
+		<echo>       alias to java -cp ${deploy-dir}\${project-name}.jar ${filelist-main-class} "D:\tmp"</echo>
 	</target>
 </project>
