@@ -1,15 +1,99 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project basedir="." default="build" name="CopyFiles">
-	<property name="main-class"  value="demo.FileDemo"/>
-	<property name="base-dir"  value="bin"/>
+<project basedir="." default="build" name="JavaFileIO">
+	<property environment="env"/>
+	<target name="setProperties">
+		<property name="main-class"  			value="demo.FileDemo"/>
+		<property name="copyfile-main-class"  	value="demo.CopyFileDemo"/>
+		<property name="filelist-main-class"  	value="demo.FileListDemo"/>
+		<property name="class-path"     		value="."/>
+        <property name="base-dir"           	value="bin"/>
+		<property name="deploy-dir"          	value="deploy"/>
+        <property name="javadoc-dir"       		value="doc"/>
+		<property name="lib-dir"	       		value="lib"/>
+		<property name="ref-dir"       			value="ref"/>
+		<property name="resource-dir"       	value="resource"/>
+		<property name="src-dir"       			value="src"/>
+		
+		<!-- Default test value-->
+		<property name="path" value="D:\tmp" />
+	</target>
+	
+	<!-- Necessary checking -->
+	<target name="check" unless="env.JAVA_HOME" depends="setProperties">
+		<fail message="JAVA_HOME must be set!"/>
+	</target>
+	
+	<!-- Clean up the project -->
+    <target name="clean" depends="setProperties">
+        <delete>
+    		<fileset dir="${base-dir}" includes="**/*.class"/>
+    	</delete>
+    	<delete>
+			<fileset dir="${deploy-dir}" includes="**/*.jar"/>
+		</delete>
+    	<delete>
+			<fileset dir="${javadoc-dir}" includes="**/*.*"/>
+		</delete>
+    </target>
+			
+    <!-- Generate java document -->
+    <target name="doc" depends="check">
+        <javadoc destdir="${javadoc-dir}">
+            <fileset dir="${src-dir}" casesensitive="yes">
+            	<include name="**/*.java"/>
+            </fileset>
+        </javadoc>
+    </target>
+	
+	<!-- Create necessary directory -->
+    <target name="prepare" depends="setProperties"> 
+        <mkdir dir="${base-dir}"/>
+    	<mkdir dir="${deploy-dir}"/>
+    	<mkdir dir="${javadoc-dir}"/>
+    	<mkdir dir="${lib-dir}"/>
+    	<mkdir dir="${ref-dir}"/>
+    	<mkdir dir="${resource-dir}"/>
+    </target> 
+    	
+	<!-- Compile source files -->
+    <target name="compile" depends="prepare">
+		<javac srcdir="${src-dir}" destdir="${base-dir}" includeantruntime="false">
+		</javac>
+    </target>
+	
 	<target name="build">
 		<mkdir dir="deploy" />
-		
-		<jar jarfile="deploy/FileForceDelete.jar" basedir="${base-dir}">
+		<jar jarfile="deploy/FileForceDelete.jar" basedir="${base-dir}" depends="compile">
 			<manifest>
-				<attribute name="Main-Class" value="${main-class}" />
+				<attribute name="Manifest-Version" value="1.0" />
+				<attribute name="Created-By" value="Chris Wong" />
 			</manifest>
 		</jar>
-		
+	</target>
+	
+	<!-- Run ${main-class} independently -->
+	<target name="run" depends="compile">
+		<java fork="true" classname="${main-class}" classpath="${base-dir}" >
+		</java>
+	</target>
+	
+	<target name="runcp" depends="compile">
+		<java fork="true" classname="${copyfile-main-class}" classpath="${base-dir}" >
+		</java>
+	</target>
+	
+	<target name="runls" depends="compile">
+		<java fork="true" classname="${filelist-main-class}" classpath="${base-dir}" >
+			<arg value="${path}" />
+		</java>
+	</target>
+
+	<!-- Help menu -->
+	<target name="help" description="help information" depends="check">
+		<echo>Sample cmd: ant run</echo>
+		<echo>Sample cmd: ant runcp</echo>
+		<echo>Sample cmd: ant runls</echo>
+		<echo>    1: ant runls -Dpath="D:\tmp"</echo>
+		<echo>Sample cmd: ant jarcp</echo>
 	</target>
 </project>
